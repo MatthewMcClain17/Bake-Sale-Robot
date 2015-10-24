@@ -12,9 +12,9 @@
  -ADVANCED: Code interrupts for calibration or emergency shutdowns
 */
 
-//CapacitiveSensor Cookie = CapacitiveSensor(48, 49);
-//CapacitiveSensor Donut = CapacitiveSensor(50, 51);
-//CapacitiveSensor Muffin = CapacitiveSensor(52, 53);
+CapacitiveSensor Cookie = CapacitiveSensor(48, 49);
+CapacitiveSensor Donut = CapacitiveSensor(50, 51);
+CapacitiveSensor Muffin = CapacitiveSensor(52, 53);
 
 #include <Servo.h>
 #include <Stepper.h>
