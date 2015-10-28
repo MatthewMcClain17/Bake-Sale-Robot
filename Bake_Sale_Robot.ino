@@ -29,7 +29,7 @@ const int stepsPerRevolution = 200;  // change this to fit the number of steps p
 
 // initialize the stepper library on pins 8 through 11:
 Stepper bottomStepper(stepsPerRevolution, 22, 24, 26, 28);
-Stepper middleStepper(stepsPerRevolution, 23, 25, 27, 29);
+Stepper topStepper(stepsPerRevolution, 23, 25, 27, 29);
 // initialize claw servo
 Servo clawServo;
 
@@ -38,7 +38,7 @@ void setup() {
   // set the speed at 30 rpm:
 
   bottomStepper.setSpeed(30);
-  middleStepper.setSpeed(30);
+  topStepper.setSpeed(30);
 
   clawServo.attach(43);
 
@@ -66,15 +66,15 @@ void loop() {
 void action1() {
 
   clawServo.write(0); //sets the angle of the servo to 0 degrees
-  middleStepper.step(200); // decrease elevates; increase brings servo down
+  topStepper.step(650); // decrease elevates; increase brings servo down
   // step one revolution (stepsPerRevolution = 200) clockwise
   bottomStepper.step(50);
-  middleStepper.step(-200); // decrease elevates; increase brings servo down
+  topStepper.step(-250); // decrease elevates; increase brings servo down
   
   clawServo.write(95); //176 is maximum vibration limit, 180 is absolute max
   
   // step one revolution in the other direction:
-  middleStepper.step(200);
+  topStepper.step(200);
   bottomStepper.step(-50);
   
   Serial.println(analogRead(distSensor)); //FIX THIS!!  
@@ -86,15 +86,15 @@ void action1() {
 
 void action2() {
    clawServo.write(0); //sets the angle of the servo to 0 degrees
-  middleStepper.step(200); // decrease elevates; increase brings servo down
+  topStepper.step(650); // decrease elevates; increase brings servo down
   // step one revolution (stepsPerRevolution = 200) clockwise
   bottomStepper.step(100);
-  middleStepper.step(-200); // decrease elevates; increase brings servo down
+  topStepper.step(-250); // decrease elevates; increase brings servo down
   
   clawServo.write(95); //176 is maximum vibration limit, 180 is absolute max
   
   // step one revolution in the other direction:
-  middleStepper.step(200);
+  topStepper.step(200);
   bottomStepper.step(-100);
   
   Serial.println(analogRead(distSensor)); //FIX THIS!!  
@@ -105,15 +105,15 @@ void action2() {
 
 void action3() {
   clawServo.write(0); //sets the angle of the servo to 0 degrees
-  middleStepper.step(200); // decrease elevates; increase brings servo down
+  topStepper.step(650); // decrease elevates; increase brings servo down
   // step one revolution (stepsPerRevolution = 200) clockwise
   bottomStepper.step(150);
-  middleStepper.step(-200); // decrease elevates; increase brings servo down
+  topStepper.step(-250); // decrease elevates; increase brings servo down
   
   clawServo.write(95); //176 is maximum vibration limit, 180 is absolute max
   
   // step one revolution in the other direction:
-  middleStepper.step(200);
+  topStepper.step(200);
   bottomStepper.step(-150);
   
   Serial.println(analogRead(distSensor)); //FIX THIS!!  
