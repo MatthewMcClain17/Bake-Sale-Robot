@@ -12,14 +12,14 @@
  -ADVANCED: Code interrupts for calibration or emergency shutdowns
 */
 
-CapacitiveSensor Cookie = CapacitiveSensor(48, 49);
-CapacitiveSensor Donut = CapacitiveSensor(50, 51);
-CapacitiveSensor Muffin = CapacitiveSensor(52, 53);
-
 #include <Servo.h>
 #include <Stepper.h>
 #include <CapacitiveSensor.h> //make sure you have this installed, found at:
 //http://playground.arduino.cc/Main/CapacitiveSensor?from=Main.CapSense
+
+CapacitiveSensor Cookie = CapacitiveSensor(48, 49);
+CapacitiveSensor Donut = CapacitiveSensor(50, 51);
+CapacitiveSensor Muffin = CapacitiveSensor(52, 53);
 
 const int distSensor = 15; //Infrared distance sensor signal pin
 
@@ -28,8 +28,8 @@ const int stepsPerRevolution = 200;  // change this to fit the number of steps p
 
 
 // initialize the stepper library on pins 8 through 11:
-Stepper bottomStepper(stepsPerRevolution, 22, 24, 26, 28);
-Stepper topStepper(stepsPerRevolution, 23, 25, 27, 29);
+Stepper topStepper(stepsPerRevolution, 22, 24, 26, 28);
+Stepper bottomStepper(stepsPerRevolution, 23, 25, 27, 29);
 // initialize claw servo
 Servo clawServo;
 
