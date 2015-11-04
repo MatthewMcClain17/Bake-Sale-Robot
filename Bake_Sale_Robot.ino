@@ -22,10 +22,14 @@
 // SETTINGS AND THRESHOLDS
 const int distSensor = 7; //Infrared distance sensor signal pin
 const int stepsPerRevolution = 200;  // number of steps per revolution for our motors
+// Stepper motor fixed movement angles
+const int armMax = -650; // Move arm above the chute to its maximum height
+const int armToChute = 200; // Move arm to height of chute
+const int true90 = 70; // Value that actually moves bottom stepper 90 degrees clockwise
 // Servo limits – to prevent the claw from breaking itself, stay near these angles
 const int clawNeutralAngle = 100;
-const int clawOpenAngle = 150;
-const int clawClosedAngle = 80;
+const int clawOpenAngle = 145;
+const int clawClosedAngle = 115;
 // Capacitive sensor activation thresholds
 const int cookieThreshold = 100;
 const int donutThreshold = 100;
@@ -52,8 +56,11 @@ void setup() {
  // set the rpm of the stepper
   topStepper.setSpeed(30);
   bottomStepper.setSpeed(5);
-
+  
   clawServo.attach(4);
+  
+  /* Put motors in their starting positions
+  topStepper.step(-200);*/
   clawServo.write(clawNeutralAngle);
 
   // initialize the serial port for testing purposes:
@@ -96,61 +103,74 @@ void loop() {
 
 // FUNCTIONS
 
-void action1() {
-
-  clawServo.write(clawNeutralAngle); //sets the servo to the neutral position
-  topStepper.step(650); // decrease elevates; increase brings servo down
-  // step one revolution (stepsPerRevolution = 200) clockwise
-  bottomStepper.step(50);
-  clawServo.write(clawOpenAngle); // fully opens the claw
-  topStepper.step(-250); // decrease elevates; increase brings servo down
+void action1() { // CLOCKWISE 90 DEGREES
+  clawServo.write(clawNeutralAngle); //set the servo to the neutral position
+  topStepper.step(armMax); // decrease elevates; increase brings servo down (+ down, - up?)
+  bottomStepper.step(true90); // step 90 degrees clockwise
+  clawServo.write(clawOpenAngle); // fully open the claw
+  topStepper.step(armToChute); // decrease elevates; increase brings servo down
+  bottomStepper.step(true90 / 10); // move the claw to push the cup to the side for easy grabbing
+  clawServo.write(clawClosedAngle); // close the claw and grab the item
   
-  clawServo.write(clawClosedAngle);
-  
-  // step one revolution in the other direction:
-  topStepper.step(200);
-  bottomStepper.step(-50);
+  topStepper.step(-armToChute); // elevate arm to max height again
+  bottomStepper.step((-true90) - (true90 / 10)); // return the arm back to the front, accounting for extra nudge
+  topStepper.step(-clawOpenAngle); // return arm to its starting angle
   
   if (analogRead(distSensor) > distSenseThreshold) { // if there is a hand above the distance sensor
-   clawServo.write(clawOpenAngle); // open the claw and drop the item
-   delay(3000);
-   clawServo.write(clawNeutralAngle);
+   delay(100);
+   if (analogRead(distSensor) > distSenseThreshold) { // if there is STILL a hand above sensor
+    clawServo.write(clawOpenAngle); // open the claw and drop the item
+    delay(3000);
+    clawServo.write(clawNeutralAngle); // return the claw to its neutral position
+   }
   }
+  // return to loop and wait for another command
 }
 
-void action2() {
-   clawServo.write(0); //sets the angle of the servo to 0 degrees
-  topStepper.step(650); // decrease elevates; increase brings servo down
-  // step one revolution (stepsPerRevolution = 200) clockwise
-  bottomStepper.step(100);
-  topStepper.step(-250); // decrease elevates; increase brings servo down
+void action2() { // CLOCKWISE 180 DEGREES
+  clawServo.write(clawNeutralAngle); //set the servo to the neutral position
+  topStepper.step(armMax); // decrease elevates; increase brings servo down (+ down, - up?)
+  bottomStepper.step(2 * true90); // step 90 degrees clockwise
+  clawServo.write(clawOpenAngle); // fully open the claw
+  topStepper.step(armToChute); // decrease elevates; increase brings servo down
+  bottomStepper.step(true90 / 10); // move the claw to push the cup to the side for easy grabbing
+  clawServo.write(clawClosedAngle); // close the claw and grab the item
   
-  clawServo.write(95); //176 is maximum vibration limit, 180 is absolute max
+  topStepper.step(-armToChute); // elevate arm to max height again
+  bottomStepper.step((-2 * true90) - (true90 / 10)); // return the arm back to the front, accounting for extra nudge
+  topStepper.step(-clawOpenAngle); // return arm to its starting angle
   
-  // step one revolution in the other direction:
-  topStepper.step(200);
-  bottomStepper.step(-100);
-  
-  Serial.println(analogRead(distSensor)); //FIX THIS!!  
-  
-  clawServo.write(0); //176 is maximum vibration limit, 180 is absolute max
-  
+  if (analogRead(distSensor) > distSenseThreshold) { // if there is a hand above the distance sensor
+   delay(100);
+   if (analogRead(distSensor) > distSenseThreshold) { // if there is STILL a hand above sensor
+    clawServo.write(clawOpenAngle); // open the claw and drop the item
+    delay(3000);
+    clawServo.write(clawNeutralAngle); // return the claw to its neutral position
+   }
+  }
+  // return to loop and wait for another command
 }
 
-void action3() {
-  clawServo.write(0); //sets the angle of the servo to 0 degrees
-  topStepper.step(650); // decrease elevates; increase brings servo down
-  // step one revolution (stepsPerRevolution = 200) clockwise
-  bottomStepper.step(150);
-  topStepper.step(-250); // decrease elevates; increase brings servo down
+void action3() { // COUNTERCLOCKWISE 90 DEGREES
+  clawServo.write(clawNeutralAngle); //set the servo to the neutral position
+  topStepper.step(armMax); // decrease elevates; increase brings servo down (+ down, - up?)
+  bottomStepper.step(-true90); // step 90 degrees clockwise
+  clawServo.write(clawOpenAngle); // fully open the claw
+  topStepper.step(armToChute); // decrease elevates; increase brings servo down
+  bottomStepper.step(-true90 / 10); // move the claw to push the cup to the side for easy grabbing
+  clawServo.write(clawClosedAngle); // close the claw and grab the item
   
-  clawServo.write(95); //176 is maximum vibration limit, 180 is absolute max
+  topStepper.step(-armToChute); // elevate arm to max height again
+  bottomStepper.step(true90 + (true90 / 10)); // return the arm back to the front, accounting for extra nudge
+  topStepper.step(-clawOpenAngle); // return arm to its starting angle
   
-  // step one revolution in the other direction:
-  topStepper.step(200);
-  bottomStepper.step(-150);
-  
-  Serial.println(analogRead(distSensor)); //FIX THIS!!  
-  
-  clawServo.write(0); //176 is maximum vibration limit, 180 is absolute max
+  if (analogRead(distSensor) > distSenseThreshold) { // if there is a hand above the distance sensor
+   delay(100);
+   if (analogRead(distSensor) > distSenseThreshold) { // if there is STILL a hand above sensor
+    clawServo.write(clawOpenAngle); // open the claw and drop the item
+    delay(3000);
+    clawServo.write(clawNeutralAngle); // return the claw to its neutral position
+   }
+  }
+  // return to loop and wait for another command
 }
