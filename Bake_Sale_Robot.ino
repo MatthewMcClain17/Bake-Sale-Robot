@@ -23,11 +23,11 @@
 const int distSensor = 7; //Infrared distance sensor signal pin
 const int stepsPerRevolution = 200;  // number of steps per revolution for our motors
 // Stepper motor fixed movement angles
-const int armMax = -650; // Move arm above the chute to its maximum height
-const int armToChute = 200; // Move arm to height of chute
+const int armMax = 670; // Move arm above the chute to its maximum height
+const int armToChute = 320; // Move arm to height of chute
 const int true90 = 70; // Value that actually moves bottom stepper 90 degrees clockwise
 // Servo limits – to prevent the claw from breaking itself, stay near these angles
-const int clawNeutralAngle = 100;
+const int clawNeutralAngle = 80;
 const int clawOpenAngle = 145;
 const int clawClosedAngle = 115;
 // Capacitive sensor activation thresholds
@@ -59,8 +59,8 @@ void setup() {
   
   clawServo.attach(4);
   
-  /* Put motors in their starting positions
-  topStepper.step(-200);*/
+  // Put motors in their starting positions
+  topStepper.step(armToChute);
   clawServo.write(clawNeutralAngle);
 
   // initialize the serial port for testing purposes:
