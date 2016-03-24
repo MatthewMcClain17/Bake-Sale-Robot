@@ -1,176 +1,126 @@
 /*
  - - - BAKE SALE ROBOT MASTER CODE - - -
 
- Written by Matthew McClain, Josh Kramer, and Tyler Kim
+ Written by Matthew McClain, Josh Kramer, Noah Thomas, and Tyler Kim
 
  TO DO:
- -Code capacitive sensors
- -Write three if statements to check if each capacitive sensor has been touched
- -Code specific response for each capacitive sensor
- -Write functions for redundant code (code which would be identical in multiple
-  different places)
+ -Name the robot
  -ADVANCED: Code interrupts for calibration or emergency shutdowns
 */
 
 // LIBRARIES
+
 #include <Servo.h>
 #include <Stepper.h>
-#include <CapacitiveSensor.h> //make sure you have this installed, found at:
-//http://playground.arduino.cc/Main/CapacitiveSensor?from=Main.CapSense
 
 
 // SETTINGS AND THRESHOLDS
-const int distSensor = 7; //Infrared distance sensor signal pin
-const int stepsPerRevolution = 200;  // number of steps per revolution for our motors
-// Stepper motor fixed movement angles
-const int armMax = 670; // Move arm above the chute to its maximum height
-const int armToChute = 320; // Move arm to height of chute
-const int true90 = 70; // Value that actually moves bottom stepper 90 degrees clockwise
-// Servo limits – to prevent the claw from breaking itself, stay near these angles
-const int clawNeutralAngle = 80;
-const int clawOpenAngle = 145;
-const int clawClosedAngle = 115;
-// Capacitive sensor activation thresholds
-const int cookieThreshold = 100;
-const int donutThreshold = 100;
-const int muffinThreshold = 100;
-const int distSenseThreshold = 500; // Distance sensor hand sensing threshold
 
-
-// OBJECT INITIALIZATION
-// initialize capacitive sensors
-CapacitiveSensor Cookie = CapacitiveSensor(48, 49); // Green wire?
-CapacitiveSensor Donut = CapacitiveSensor(50, 51); // Red wire?
-CapacitiveSensor Muffin = CapacitiveSensor(52, 53); // Black wire?
-// initialize stepper motors
+// Stepper motors
+const int stepsPerRevolution = 200; // Number of steps per revolution for steppers used
+const int armMax = 550; // Number of steps from horizontal to highest arm elevation
+const int armToChute = 300; // Number of steps from horizontal to chute elevation
 Stepper topStepper(stepsPerRevolution, 22, 24, 26, 28);
 Stepper bottomStepper(stepsPerRevolution, 23, 25, 27, 29);
-// initialize claw servo
+
+// Claw
+const int claw = 4;
+const int clawNeutralAngle = 80; // basic position of claw
+const int clawOpenAngle = 145; // for preparing to grab cups
+const int clawClosedAngle = 115; // for grabbing cups
 Servo clawServo;
 
+// Buttons
+const int leftButton = 10; // left button (formerly cookie)
+const int centerButton = 11; // center button (formerly muffin)
+const int rightButton = 12; // right button (formerly donut)
+const int debounce = 20; // wait time (in ms) to ensure button has truly been pressed
 
 
 void setup() {
-  pinMode(distSensor, INPUT); // set the distance sensor's signal to input
-
- // set the rpm of the stepper
-  topStepper.setSpeed(30);
-  bottomStepper.setSpeed(5);
+  // Stepper motors
+  topStepper.setSpeed(30); // speed measured in RPM
+  bottomStepper.setSpeed(10);
   
-  clawServo.attach(4);
-  
-  // Put motors in their starting positions
-  topStepper.step(armToChute);
-  clawServo.write(clawNeutralAngle);
+  // Claw
+  clawServo.attach(claw);
+  clawServo.write(clawNeutralAngle); // starting position
 
-  // initialize the serial port for testing purposes:
-  Serial.begin(9600);
+  // Buttons
+  pinMode(leftButton, INPUT);
+  pinMode(centerButton, INPUT);
+  pinMode(rightButton, INPUT);
 }
 
 void loop() {
- // FOR TESTING PURPOSES
-   /* Distance sensor testing
-  Serial.println(analogRead(distSensor));
-  delay(500);
-  */
-  /* Claw servo testing
-  clawServo.write(180);
-  delay(1000);
-  clawServo.write(100);
-  delay(1000);
-  */
-  /* Stepper testing
-  bottomStepper.step(70);
-  delay(500);
-  bottomStepper.step(-70);
-  delay(500);
-  */
- 
- /*
-  if (Cookie.capacitiveSensor(30) > cookieThreshold) {
-    action1();
+  // Left chute
+  if (digitalRead(leftButton) == LOW) {
+    delay(debounce); // confirms button has been pressed only once
+    if (digitalRead(leftButton) == LOW) {
+      rotateArm(-150);
+    }
   }
 
-  if (Donut.capacitiveSensor(30) > donutThreshold) {
-  action2();
+  // Back chute
+  if (digitalRead(centerButton) == LOW) {
+    delay(debounce); // confirms button has been pressed only once
+    if (digitalRead(centerButton) == LOW) {
+      rotateArm(-300);
+    }
   }
 
-  if (Muffin.capacitiveSensor(30) > muffinThreshold) {
-  action3();
+  // Right chute
+  if (digitalRead(rightButton) == LOW) {
+    delay(debounce); // confirms button has been pressed only once
+    if (digitalRead(rightButton) == LOW) {
+      rotateArm(150);
+    }
   }
-  */
 }
 
 // FUNCTIONS
 
-void action1() { // CLOCKWISE 90 DEGREES
-  clawServo.write(clawNeutralAngle); //set the servo to the neutral position
-  topStepper.step(armMax); // decrease elevates; increase brings servo down (+ down, - up?)
-  bottomStepper.step(true90); // step 90 degrees clockwise
-  clawServo.write(clawOpenAngle); // fully open the claw
-  topStepper.step(armToChute); // decrease elevates; increase brings servo down
-  bottomStepper.step(true90 / 10); // move the claw to push the cup to the side for easy grabbing
-  clawServo.write(clawClosedAngle); // close the claw and grab the item
-  
-  topStepper.step(-armToChute); // elevate arm to max height again
-  bottomStepper.step((-true90) - (true90 / 10)); // return the arm back to the front, accounting for extra nudge
-  topStepper.step(-clawOpenAngle); // return arm to its starting angle
-  
-  if (analogRead(distSensor) > distSenseThreshold) { // if there is a hand above the distance sensor
-   delay(100);
-   if (analogRead(distSensor) > distSenseThreshold) { // if there is STILL a hand above sensor
-    clawServo.write(clawOpenAngle); // open the claw and drop the item
-    delay(3000);
-    clawServo.write(clawNeutralAngle); // return the claw to its neutral position
-   }
-  }
-  // return to loop and wait for another command
+void rotateArm(int steps) {
+  // go to position
+  topStepper.step(armMax);
+  bottomStepper.step(steps);
+  getCup();
+  // return to start
+  bottomStepper.step(-steps);
+  topStepper.step(-armMax);
+  // drop cup
+  clawServo.write(clawOpenAngle); // open claw, dropping the cup
+  delay(1000);
+  clawServo.write(clawNeutralAngle); // set to neutral starting position
 }
 
-void action2() { // CLOCKWISE 180 DEGREES
-  clawServo.write(clawNeutralAngle); //set the servo to the neutral position
-  topStepper.step(armMax); // decrease elevates; increase brings servo down (+ down, - up?)
-  bottomStepper.step(2 * true90); // step 90 degrees clockwise
-  clawServo.write(clawOpenAngle); // fully open the claw
-  topStepper.step(armToChute); // decrease elevates; increase brings servo down
-  bottomStepper.step(true90 / 10); // move the claw to push the cup to the side for easy grabbing
-  clawServo.write(clawClosedAngle); // close the claw and grab the item
-  
-  topStepper.step(-armToChute); // elevate arm to max height again
-  bottomStepper.step((-2 * true90) - (true90 / 10)); // return the arm back to the front, accounting for extra nudge
-  topStepper.step(-clawOpenAngle); // return arm to its starting angle
-  
-  if (analogRead(distSensor) > distSenseThreshold) { // if there is a hand above the distance sensor
-   delay(100);
-   if (analogRead(distSensor) > distSenseThreshold) { // if there is STILL a hand above sensor
-    clawServo.write(clawOpenAngle); // open the claw and drop the item
-    delay(3000);
-    clawServo.write(clawNeutralAngle); // return the claw to its neutral position
-   }
-  }
-  // return to loop and wait for another command
+void getCup() {
+  delay(500);
+  clawServo.write(clawOpenAngle); // open claw
+  delay(500);
+  topStepper.step(-(armMax - armToChute)); // move arm to level of chute
+  delay(500);
+  clawServo.write(clawClosedAngle); // close claw
+  delay(500);
+  topStepper.step((armMax - armToChute)); // move arm back to armMax
 }
 
-void action3() { // COUNTERCLOCKWISE 90 DEGREES
-  clawServo.write(clawNeutralAngle); //set the servo to the neutral position
-  topStepper.step(armMax); // decrease elevates; increase brings servo down (+ down, - up?)
-  bottomStepper.step(-true90); // step 90 degrees clockwise
-  clawServo.write(clawOpenAngle); // fully open the claw
-  topStepper.step(armToChute); // decrease elevates; increase brings servo down
-  bottomStepper.step(-true90 / 10); // move the claw to push the cup to the side for easy grabbing
-  clawServo.write(clawClosedAngle); // close the claw and grab the item
-  
-  topStepper.step(-armToChute); // elevate arm to max height again
-  bottomStepper.step(true90 + (true90 / 10)); // return the arm back to the front, accounting for extra nudge
-  topStepper.step(-clawOpenAngle); // return arm to its starting angle
-  
-  if (analogRead(distSensor) > distSenseThreshold) { // if there is a hand above the distance sensor
-   delay(100);
-   if (analogRead(distSensor) > distSenseThreshold) { // if there is STILL a hand above sensor
-    clawServo.write(clawOpenAngle); // open the claw and drop the item
-    delay(3000);
-    clawServo.write(clawNeutralAngle); // return the claw to its neutral position
-   }
-  }
-  // return to loop and wait for another command
+
+// Testing Functions
+
+void clawTesting() { // Tests the claw by setting it to neutral, open, and closed
+  clawServo.write(clawNeutralAngle);
+  delay(500);
+  clawServo.write(clawOpenAngle);
+  delay(500);
+  clawServo.write(clawClosedAngle);
+  delay(500);
+  clawServo.write(clawNeutralAngle);
+}
+
+void piezoTesting() { // Beeps a piezoelectric buzzer attached to 6 and GND
+  pinMode(6, OUTPUT);
+  analogWrite(6, 128);
+  delay(1000);
+  analogWrite(6, 0);
 }
