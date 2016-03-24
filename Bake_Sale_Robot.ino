@@ -1,35 +1,33 @@
 /*
  - - - BAKE SALE ROBOT MASTER CODE - - -
 
- Written by Matthew McClain, Josh Kramer, and Tyler Kim
+ Written by Matthew McClain, Josh Kramer, Noah Thomas, and Tyler Kim
 
  TO DO:
- -Code capacitive sensors
- -Write three if statements to check if each capacitive sensor has been touched
- -Code specific response for each capacitive sensor
- -Write functions for redundant code (code which would be identical in multiple
-  different places)
+ -Delete last remaining Micro commands
+ -Name the robot
+ -Clean up unneccesary portions of code
  -ADVANCED: Code interrupts for calibration or emergency shutdowns
 */
 
 // LIBRARIES
-//#include <Servo.h> // delete when micro test is successful
+#include <Servo.h>
 #include <Stepper.h>
 
 // SETTINGS AND THRESHOLDS
 // Stepper motors
-const int stepsPerRevolution = 200;
-const int armMax = 550; // Number of steps from horizontal to highest point
-const int armToChute = 300; // Number of steps from horizontal to chute
+const int stepsPerRevolution = 200; // Number of steps per revolution for steppers used
+const int armMax = 550; // Number of steps from horizontal to highest arm elevation
+const int armToChute = 300; // Number of steps from horizontal to chute elevation
 Stepper topStepper(stepsPerRevolution, 22, 24, 26, 28);
 Stepper bottomStepper(stepsPerRevolution, 23, 25, 27, 29);
 
 // Claw
-const int claw = 4; // Pin to transmit claw commands to micro
+const int claw = 4;
 const int clawNeutralAngle = 80;
 const int clawOpenAngle = 145; // HIGH
 const int clawClosedAngle = 115; // LOW
-//Servo clawServo; delete soon
+Servo clawServo;
 
 // Buttons
 const int cookiebuttonpin = 10;
@@ -39,23 +37,21 @@ const int debounce = 20;
 
 
 void setup() {
-  Serial.begin(9600); //delete in final code
-  
   // Stepper motors
   //topStepper.step(-armMax); //delete soon
   topStepper.setSpeed(30); //speed measured in RPM
   bottomStepper.setSpeed(10);
   
   // Claw
-  pinMode(claw, OUTPUT);
-  digitalWrite(claw, LOW); //tell micro to close claw
+  clawServo.attach(claw);
+  clawServo.write(clawNeutralAngle); // Starting position
 
   // Buttons
   pinMode(cookiebuttonpin, INPUT);
   pinMode(muffinbuttonpin, INPUT);
   pinMode(donutbuttonpin, INPUT);
 
-  // Test piezoelectric buzzer
+  // Test piezoelectric buzzer – remove after servo issue is dealt with
   pinMode(6, OUTPUT);
   analogWrite(6, 128);
   delay(1000);
@@ -68,11 +64,7 @@ void loop() {
   if (digitalRead(cookiebuttonpin) == LOW) {
     delay(debounce); // Confirms button has been pressed only once
     if (digitalRead(cookiebuttonpin) == LOW) {
-      Serial.println("cookieLOW");
       rotateArm(-150);
-    }
-    else {
-      Serial.println("cookieHigh");
     }
   }
 
@@ -80,11 +72,7 @@ void loop() {
   if (digitalRead(muffinbuttonpin) == LOW) {
     delay(debounce); // Confirms button has been pressed only once
     if (digitalRead(muffinbuttonpin) == LOW) {
-      Serial.println("muffinLOW");
       rotateArm(-300);
-    }
-    else {
-      Serial.println("muffinHIGH");
     }
   }
 
@@ -92,35 +80,38 @@ void loop() {
   if (digitalRead(donutbuttonpin) == LOW) {
     delay(debounce); // Confirms button has been pressed only once
     if (digitalRead(donutbuttonpin) == LOW) {
-      Serial.println("donutLOW");
       rotateArm(150);
-    }
-    else {
-      Serial.println("donutHIGH");
     }
   }
 }
 
 void rotateArm(int steps) {
   //go to position
-  testing(); // no problem
+  testing(); // delete soon
   topStepper.step(armMax);
-  testing(); //stops here
+  testing();
   bottomStepper.step(steps);
-  //getCup();
+  getCup();
   // return to start
   bottomStepper.step(-steps);
   topStepper.step(-armMax);
   // drop cup
+  clawServo.write(clawOpenAngle);
+  delay(500);
+  clawServo.write(clawNeutralAngle);
+  /*
   digitalWrite(claw, HIGH); // tell micro to open claw
   delay(1000);
   digitalWrite(claw, LOW); // tell micro to close claw
+  */
 }
 
 void getCup() {
-  digitalWrite(claw, HIGH); // tell micro to open claw
+  //digitalWrite(claw, HIGH); // tell micro to open claw
+  clawServo.write(clawOpenAngle);
   topStepper.step(-(armMax - armToChute)); // move arm to level of chute
-  digitalWrite(claw, LOW); // tell micro to close claw
+  //digitalWrite(claw, LOW); // tell micro to close claw
+  clawServo.write(clawClosedAngle);
   topStepper.step((armMax - armToChute)); // move arm back to armMax
 }
 
@@ -178,6 +169,14 @@ void DonutAction() {
 
 
 void testing() {
+  clawServo.write(clawNeutralAngle);
+  delay(500);
+  clawServo.write(clawOpenAngle);
+  delay(500);
+  clawServo.write(clawClosedAngle);
+  delay(500);
+  clawServo.write(clawNeutralAngle);
+  /*
   delay(500);
   digitalWrite(claw, HIGH);
   delay(500);
