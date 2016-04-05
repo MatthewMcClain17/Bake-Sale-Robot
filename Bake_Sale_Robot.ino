@@ -40,7 +40,7 @@ const int debounce = 20; // wait time (in ms) to ensure button has truly been pr
 void setup() {
   // Stepper motors
   topStepper.setSpeed(30); // speed measured in RPM
-  bottomStepper.setSpeed(10);
+  bottomStepper.setSpeed(8);
   
   // Claw
   clawServo.attach(claw);
