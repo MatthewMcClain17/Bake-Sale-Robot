@@ -20,6 +20,8 @@
 const int stepsPerRevolution = 200; // Number of steps per revolution for steppers used
 const int armMax = 550; // Number of steps from horizontal to highest arm elevation
 const int armToChute = 300; // Number of steps from horizontal to chute elevation
+const int dropPosition = 200; // Number of steps from horizontal to drop position
+const int tuning = 10; // Adjustable value to increase accuracy of rotation
 Stepper topStepper(stepsPerRevolution, 22, 24, 26, 28);
 Stepper bottomStepper(stepsPerRevolution, 23, 25, 27, 29);
 
@@ -40,7 +42,7 @@ const int debounce = 20; // wait time (in ms) to ensure button has truly been pr
 void setup() {
   // Stepper motors
   topStepper.setSpeed(30); // speed measured in RPM
-  bottomStepper.setSpeed(8);
+  bottomStepper.setSpeed(10);
   
   // Claw
   clawServo.attach(claw);
@@ -86,12 +88,14 @@ void rotateArm(int steps) {
   bottomStepper.step(steps);
   getCup();
   // return to start
-  bottomStepper.step(-steps);
-  topStepper.step(-armMax);
+  bottomStepper.step(-(steps));
+  topStepper.step(-(armMax - dropPosition)); // lower to drop position
+  delay(1000);
   // drop cup
   clawServo.write(clawOpenAngle); // open claw, dropping the cup
   delay(1000);
   clawServo.write(clawNeutralAngle); // set to neutral starting position
+  topStepper.step(-dropPosition); // lower to horizontal starting position
 }
 
 void getCup() {
