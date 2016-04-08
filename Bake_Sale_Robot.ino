@@ -55,14 +55,14 @@ void setup() {
 
   // Calibration
   // Hold all three buttons down on startup to activate
-  if (digitalRead(leftButton) == HIGH
-  && digitalRead(centerButton) == HIGH
-  && digitalRead(rightButton) == HIGH) {
+  if (digitalRead(leftButton) == LOW
+  && digitalRead(centerButton) == LOW
+  && digitalRead(rightButton) == LOW) {
     delay(debounce);
     
-    if (digitalRead(leftButton) == HIGH
-    && digitalRead(centerButton) == HIGH
-    && digitalRead(rightButton) == HIGH) {
+    if (digitalRead(leftButton) == LOW
+    && digitalRead(centerButton) == LOW
+    && digitalRead(rightButton) == LOW) {
       calibrate();
     }
   }
@@ -146,7 +146,8 @@ void calibrate() {
       escape = true;
       }
     }
-  } while (escape = false);
+  } while (escape == false);
+  escape = false;
 
   // go to center position
   topStepper.step(armMax - armToChute); // return arm to armMax
@@ -161,7 +162,8 @@ void calibrate() {
       escape = true;
       }
     }
-  } while (escape = false);
+  } while (escape == false);
+  escape = false;
 
   // go to right position
   topStepper.step(armMax - armToChute); // return arm to armMax
@@ -176,7 +178,8 @@ void calibrate() {
       escape = true;
       }
     }
-  } while (escape = false);
+  } while (escape == false);
+  escape = false;
 
   // return to start
   topStepper.step(armMax - armToChute); // return arm to armMax
