@@ -46,7 +46,6 @@ void setup() {
   
   // Claw
   clawServo.attach(claw);
-  clawServo.write(clawNeutralAngle); // starting position
 
   // Buttons
   pinMode(leftButton, INPUT);
@@ -67,6 +66,7 @@ void setup() {
     }
   }
   
+  clawServo.write(clawNeutralAngle); // set claw to starting position
 }
 
 void loop() {
@@ -110,6 +110,7 @@ void rotateArm(int steps) {
   clawServo.write(clawOpenAngle); // open claw, dropping the cup
   delay(1000);
   clawServo.write(clawNeutralAngle); // set to neutral starting position
+  delay(200);
   topStepper.step(-dropPosition); // lower to horizontal starting position
 }
 
@@ -187,7 +188,10 @@ void calibrate() {
   topStepper.step(-armMax);
 }
 
-// Testing Functions
+
+
+
+/* Testing Functions
 
 void clawTesting() { // Tests the claw by setting it to neutral, open, and closed
   clawServo.write(clawNeutralAngle);
@@ -205,3 +209,4 @@ void piezoTesting() { // Beeps a piezoelectric buzzer attached to 6 and GND
   delay(1000);
   analogWrite(6, 0);
 }
+*/
