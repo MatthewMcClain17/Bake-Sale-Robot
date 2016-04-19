@@ -20,6 +20,8 @@
 const int stepsPerRevolution = 200; // Number of steps per revolution for steppers used
 const int armMax = 550; // Number of steps from horizontal to highest arm elevation
 const int armToChute = 300; // Number of steps from horizontal to chute elevation
+const int dropPosition = 200; // Number of steps from horizontal to drop position
+const int tuning = 10; // Adjustable value to increase accuracy of rotation
 Stepper topStepper(stepsPerRevolution, 22, 24, 26, 28);
 Stepper bottomStepper(stepsPerRevolution, 23, 25, 27, 29);
 
@@ -44,12 +46,27 @@ void setup() {
   
   // Claw
   clawServo.attach(claw);
-  clawServo.write(clawNeutralAngle); // starting position
 
   // Buttons
   pinMode(leftButton, INPUT);
   pinMode(centerButton, INPUT);
   pinMode(rightButton, INPUT);
+
+  // Calibration
+  // Hold all three buttons down on startup to activate
+  if (digitalRead(leftButton) == LOW
+  && digitalRead(centerButton) == LOW
+  && digitalRead(rightButton) == LOW) {
+    delay(debounce);
+    
+    if (digitalRead(leftButton) == LOW
+    && digitalRead(centerButton) == LOW
+    && digitalRead(rightButton) == LOW) {
+      calibrate();
+    }
+  }
+  
+  clawServo.write(clawNeutralAngle); // set claw to starting position
 }
 
 void loop() {
@@ -86,12 +103,15 @@ void rotateArm(int steps) {
   bottomStepper.step(steps);
   getCup();
   // return to start
-  bottomStepper.step(-steps);
-  topStepper.step(-armMax);
+  bottomStepper.step(-(steps));
+  topStepper.step(-(armMax - dropPosition)); // lower to drop position
+  delay(1000);
   // drop cup
   clawServo.write(clawOpenAngle); // open claw, dropping the cup
   delay(1000);
   clawServo.write(clawNeutralAngle); // set to neutral starting position
+  delay(200);
+  topStepper.step(-dropPosition); // lower to horizontal starting position
 }
 
 void getCup() {
@@ -102,11 +122,76 @@ void getCup() {
   delay(500);
   clawServo.write(clawClosedAngle); // close claw
   delay(500);
-  topStepper.step((armMax - armToChute)); // move arm back to armMax
+  topStepper.step(armMax - armToChute); // move arm back to armMax
 }
 
 
-// Testing Functions
+void calibrate() {
+  // Used to line up chutes with claw. Press center button to advance.
+  // Local variables
+  const int steps = 150;
+  boolean escape = false;
+  
+  clawServo.write(clawOpenAngle); // open claw
+  
+  // go to left position
+  topStepper.step(armMax); // raise arm
+  bottomStepper.step(-steps);
+  topStepper.step(-(armMax - armToChute)); // lower arm
+  
+  // wait until center button is pressed
+  do {
+    if (digitalRead(centerButton) == LOW) {
+    delay(debounce); // confirms button has been pressed only once
+    if (digitalRead(centerButton) == LOW) {
+      escape = true;
+      }
+    }
+  } while (escape == false);
+  escape = false;
+
+  // go to center position
+  topStepper.step(armMax - armToChute); // return arm to armMax
+  bottomStepper.step(-steps);
+  topStepper.step(-(armMax - armToChute)); // lower arm
+  
+  // wait until center button is pressed
+  do {
+    if (digitalRead(centerButton) == LOW) {
+    delay(debounce); // confirms button has been pressed only once
+    if (digitalRead(centerButton) == LOW) {
+      escape = true;
+      }
+    }
+  } while (escape == false);
+  escape = false;
+
+  // go to right position
+  topStepper.step(armMax - armToChute); // return arm to armMax
+  bottomStepper.step(3 * steps);
+  topStepper.step(-(armMax - armToChute)); // lower arm
+
+  // wait until center button is pressed
+  do {
+    if (digitalRead(centerButton) == LOW) {
+    delay(debounce); // confirms button has been pressed only once
+    if (digitalRead(centerButton) == LOW) {
+      escape = true;
+      }
+    }
+  } while (escape == false);
+  escape = false;
+
+  // return to start
+  topStepper.step(armMax - armToChute); // return arm to armMax
+  bottomStepper.step(-steps);
+  topStepper.step(-armMax);
+}
+
+
+
+
+/* Testing Functions
 
 void clawTesting() { // Tests the claw by setting it to neutral, open, and closed
   clawServo.write(clawNeutralAngle);
@@ -124,3 +209,4 @@ void piezoTesting() { // Beeps a piezoelectric buzzer attached to 6 and GND
   delay(1000);
   analogWrite(6, 0);
 }
+*/
