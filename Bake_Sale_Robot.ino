@@ -38,6 +38,7 @@ const int centerButton = 11; // center button (formerly muffin)
 const int rightButton = 12; // right button (formerly donut)
 const int debounce = 20; // wait time (in ms) to ensure button has truly been pressed
 
+bool calibrate = false;
 
 void setup() {
   // Stepper motors
@@ -58,11 +59,12 @@ void setup() {
   && digitalRead(centerButton) == LOW
   && digitalRead(rightButton) == LOW) {
     delay(debounce);
-    
-    if (digitalRead(leftButton) == LOW
+
+    // until buttons are released, set calibrate to true
+    while (digitalRead(leftButton) == LOW
     && digitalRead(centerButton) == LOW
     && digitalRead(rightButton) == LOW) {
-      calibrate();
+      calibrate = true;
     }
   }
   
@@ -120,14 +122,29 @@ void getCup() {
   delay(500);
   topStepper.step(-(armMax - armToChute)); // move arm to level of chute
   delay(500);
+  calibrateClaw();
   clawServo.write(clawClosedAngle); // close claw
   delay(500);
   topStepper.step(armMax - armToChute); // move arm back to armMax
 }
 
 
-void calibrate() {
-  // Used to line up chutes with claw. Press center button to advance.
+void calibrateClaw() {
+  // Used to line up chutes with claw. Press center button to advance
+  boolean escape = false;
+  
+  if (calibrate = true) {
+    // wait until center button is pressed
+    do {
+      if (digitalRead(centerButton) == LOW) {
+      delay(debounce); // confirms button has been pressed only once
+      if (digitalRead(centerButton) == LOW) {
+        escape = true;
+        }
+      }
+    } while (escape == false);
+  }
+  /*
   // Local variables
   const int steps = 150;
   boolean escape = false;
@@ -186,6 +203,7 @@ void calibrate() {
   topStepper.step(armMax - armToChute); // return arm to armMax
   bottomStepper.step(-steps);
   topStepper.step(-armMax);
+  */
 }
 
 
