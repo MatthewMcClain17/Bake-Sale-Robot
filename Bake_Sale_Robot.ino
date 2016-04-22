@@ -144,66 +144,6 @@ void calibrateClaw() {
       }
     } while (escape == false);
   }
-  /*
-  // Local variables
-  const int steps = 150;
-  boolean escape = false;
-  
-  clawServo.write(clawOpenAngle); // open claw
-  
-  // go to left position
-  topStepper.step(armMax); // raise arm
-  bottomStepper.step(-steps);
-  topStepper.step(-(armMax - armToChute)); // lower arm
-  
-  // wait until center button is pressed
-  do {
-    if (digitalRead(centerButton) == LOW) {
-    delay(debounce); // confirms button has been pressed only once
-    if (digitalRead(centerButton) == LOW) {
-      escape = true;
-      }
-    }
-  } while (escape == false);
-  escape = false;
-
-  // go to center position
-  topStepper.step(armMax - armToChute); // return arm to armMax
-  bottomStepper.step(-steps);
-  topStepper.step(-(armMax - armToChute)); // lower arm
-  
-  // wait until center button is pressed
-  do {
-    if (digitalRead(centerButton) == LOW) {
-    delay(debounce); // confirms button has been pressed only once
-    if (digitalRead(centerButton) == LOW) {
-      escape = true;
-      }
-    }
-  } while (escape == false);
-  escape = false;
-
-  // go to right position
-  topStepper.step(armMax - armToChute); // return arm to armMax
-  bottomStepper.step(3 * steps);
-  topStepper.step(-(armMax - armToChute)); // lower arm
-
-  // wait until center button is pressed
-  do {
-    if (digitalRead(centerButton) == LOW) {
-    delay(debounce); // confirms button has been pressed only once
-    if (digitalRead(centerButton) == LOW) {
-      escape = true;
-      }
-    }
-  } while (escape == false);
-  escape = false;
-
-  // return to start
-  topStepper.step(armMax - armToChute); // return arm to armMax
-  bottomStepper.step(-steps);
-  topStepper.step(-armMax);
-  */
 }
 
 
