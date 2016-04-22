@@ -19,7 +19,7 @@
 // Stepper motors
 const int stepsPerRevolution = 200; // Number of steps per revolution for steppers used
 const int armMax = 550; // Number of steps from horizontal to highest arm elevation
-const int armToChute = 300; // Number of steps from horizontal to chute elevation
+const int armToChute = 260; // Number of steps from horizontal to chute elevation
 const int dropPosition = 200; // Number of steps from horizontal to drop position
 const int tuning = 10; // Adjustable value to increase accuracy of rotation
 Stepper topStepper(stepsPerRevolution, 22, 24, 26, 28);
@@ -43,7 +43,7 @@ bool calibrate = false;
 void setup() {
   // Stepper motors
   topStepper.setSpeed(30); // speed measured in RPM
-  bottomStepper.setSpeed(10);
+  //bottomStepper.setSpeed(10);
   
   // Claw
   clawServo.attach(claw);
@@ -76,7 +76,8 @@ void loop() {
   if (digitalRead(leftButton) == LOW) {
     delay(debounce); // confirms button has been pressed only once
     if (digitalRead(leftButton) == LOW) {
-      rotateArm(-150);
+      bottomStepper.setSpeed(10);
+      rotateArm(-150, 0, 0);
     }
   }
 
@@ -84,28 +85,30 @@ void loop() {
   if (digitalRead(centerButton) == LOW) {
     delay(debounce); // confirms button has been pressed only once
     if (digitalRead(centerButton) == LOW) {
-      rotateArm(-300);
+      bottomStepper.setSpeed(10);
+      rotateArm(-300, 0, 0);
     }
   }
 
-  // Right chute
+  // Right chute – the one that works best
   if (digitalRead(rightButton) == LOW) {
     delay(debounce); // confirms button has been pressed only once
     if (digitalRead(rightButton) == LOW) {
-      rotateArm(150);
+      bottomStepper.setSpeed(10);
+      rotateArm(150, 0, 0);
     }
   }
 }
 
 // FUNCTIONS
 
-void rotateArm(int steps) {
+void rotateArm(int steps, int tuning1, int tuning2) {
   // go to position
   topStepper.step(armMax);
-  bottomStepper.step(steps);
+  bottomStepper.step(steps + tuning1);
   getCup();
   // return to start
-  bottomStepper.step(-(steps));
+  bottomStepper.step(-(steps + tuning2));
   topStepper.step(-(armMax - dropPosition)); // lower to drop position
   delay(1000);
   // drop cup
